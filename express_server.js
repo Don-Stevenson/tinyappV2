@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
+app.set("view engine", "ejs");
 
 // database containing the urls for tinyApp
 const urlDatabase = {
@@ -20,10 +21,18 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+// page that displays the urls using templateVars
+app.get("/urls", (req, res) => {
+  let templateVars = { urls: urlDatabase };
+  res.render("urls_index", templateVars);
+});
+
 // page that displays a basic hello html page
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
+
+
 
 //Server up and listening
 //***********************
