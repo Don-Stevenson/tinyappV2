@@ -25,7 +25,8 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
-
+//Server up and listening
+//***********************
 // Response to the command line that shows the server is up an running
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
