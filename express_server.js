@@ -3,6 +3,8 @@ const app = express();
 const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
 
+
+// DATABASE
 // database containing the urls for tinyApp
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -21,10 +23,16 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-// page that displays the urls using templateVars
+// route that renders the urls from urls_index
 app.get("/urls", (req, res) => {
   let templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
+});
+
+// route that renders the short url 
+app.get("/urls/:shortURL", (req, res) => {
+  let templateVars = { shortURL: req.params.shortURL, longURL: req.params.longURL };
+  res.render("urls_show", templateVars);
 });
 
 // page that displays a basic hello html page
