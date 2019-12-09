@@ -23,6 +23,11 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+// renders the new urls page
+app.get("/urls/new", (req, res) => {
+  res.render("urls_new");
+});
+
 // route that renders the urls from urls_index
 app.get("/urls", (req, res) => {
   let templateVars = { urls: urlDatabase };
@@ -34,6 +39,7 @@ app.get("/urls/:shortURL", (req, res) => {
   let templateVars = { shortURL: req.params.shortURL, longURL: req.params.longURL };
   res.render("urls_show", templateVars);
 });
+
 
 // page that displays a basic hello html page
 app.get("/hello", (req, res) => {
