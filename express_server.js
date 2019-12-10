@@ -69,7 +69,11 @@ app.get("/u/:shortURL", (req, res) => {
 //**********************************************
 app.post("/urls", (req, res) => {
   const randomURL = generateRandomString();
-  urlDatabase[randomURL] = req.body.longURL;
+  let httpCheck = req.body.longURL.slice(0,4)
+  console.log(httpCheck)
+    if (httpCheck !== 'http'){
+      urlDatabase[randomURL] = 'http://' + req.body.longURL
+    } else urlDatabase[randomURL] = req.body.longURL;
   // let templateVars = {shortURL: randomURL, longURL: req.body.longURL}
 
   // console.log(urlDatabase);
