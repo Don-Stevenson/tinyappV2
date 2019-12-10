@@ -3,9 +3,12 @@
 const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
-app.set("view engine", "ejs");
+const cookieParser = require('cookie-parser')
+// using the cookie parser
+app.use(cookieParser())
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
+app.set("view engine", "ejs");
 
 
 // DATABASE
@@ -15,6 +18,28 @@ const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+
+// handling the cookies
+// app.use("/urls", (req, res, next) => {
+
+//   if (req.cookies["username"]) {
+//     next();
+//   } else {
+//     res.redirect('/login');
+//   } 
+// })
+
+// app.use("/urls/new", (req, res, next) => {
+
+//   if (req.cookies["username"]) {
+//     next();
+//   } else {
+//     res.redirect('/login');
+//   } 
+// })
+
+
+
 
 // Gets
 // ******************************************
@@ -56,9 +81,10 @@ app.get("/hello", (req, res) => {
 //redirect any request from a short url to its long URL
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
-
   res.redirect(longURL);
 });
+
+
 
 //Posts
 // ******************************************
@@ -88,6 +114,18 @@ app.post("/urls/:shortURL/edit", (req, res) => {
   res.redirect(`/urls/${req.params.shortURL}`)
 });
 
+
+// handling the user logout
+app.post("/logout", (req, res) => {
+  res.clearCookie(req.cookies["usersname"]);
+  res.redirect('/urls/');
+});
+
+// user login
+app.post("/login", (req, res) => {
+  res.cookie('username', req.body.username);
+  res.redirect('/urls/');
+});
 
 // Function that generates a random string for shortening a url 
 const generateRandomString = () => {
