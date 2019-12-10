@@ -39,7 +39,6 @@ app.get("/urls/:shortURL", (req, res) => {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL]
   };
-  console.log(templateVars)
   res.render("urls_show", templateVars);
 });
 
@@ -70,7 +69,6 @@ app.get("/u/:shortURL", (req, res) => {
 app.post("/urls", (req, res) => {
   const randomURL = generateRandomString();
   let httpCheck = req.body.longURL.slice(0, 4)
-  console.log(httpCheck)
   if (httpCheck !== 'http') {
     urlDatabase[randomURL] = 'http://' + req.body.longURL
   } else urlDatabase[randomURL] = req.body.longURL;
