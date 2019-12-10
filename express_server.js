@@ -60,10 +60,6 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
-
-
-//here problems
-
 //Posts
 //**********************************************
 app.post("/urls", (req, res) => {
