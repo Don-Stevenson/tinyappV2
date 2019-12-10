@@ -68,10 +68,16 @@ app.post("/urls", (req, res) => {
   if (httpCheck !== 'http') {
     urlDatabase[randomURL] = 'http://' + req.body.longURL
   } else urlDatabase[randomURL] = req.body.longURL;
-  // let templateVars = {shortURL: randomURL, longURL: req.body.longURL}
-
-  // console.log(urlDatabase);
   res.redirect("/urls/" + randomURL);
+});
+
+// to delete a url
+app.post("/urls/:shortURL/delete", (req, res) => {
+
+  if (urlDatabase[req.params.shortURL]) {
+    delete urlDatabase[req.params.shortURL];
+    res.redirect('/urls/');
+  }
 });
 
 
