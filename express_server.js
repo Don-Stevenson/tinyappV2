@@ -61,7 +61,8 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 //Posts
-//**********************************************
+// ******************************************
+// to create a random URL for a longURL  
 app.post("/urls", (req, res) => {
   const randomURL = generateRandomString();
   let httpCheck = req.body.longURL.slice(0, 4)
@@ -73,11 +74,18 @@ app.post("/urls", (req, res) => {
 
 // to delete a url
 app.post("/urls/:shortURL/delete", (req, res) => {
-
   if (urlDatabase[req.params.shortURL]) {
     delete urlDatabase[req.params.shortURL];
     res.redirect('/urls/');
   }
+});
+
+// to edit a url
+app.post("/urls/:shortURL/edit", (req, res) => {
+  if (urlDatabase[req.params.shortURL]) {
+    urlDatabase[req.params.shortURL] = req.body.longURL;
+  }
+  res.redirect(`/urls/${req.params.shortURL}`)
 });
 
 
@@ -92,8 +100,8 @@ const generateRandomString = () => {
 };
 
 
-//Server up and listening
-//**********************************************
+// Server's up and listening
+// ******************************************
 // Response to the command line that shows the server is up an running
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
