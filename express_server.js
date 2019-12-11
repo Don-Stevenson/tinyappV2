@@ -12,7 +12,7 @@ app.set("view engine", "ejs");
 
 
 // DATABASE
-// database containing the urls for tinyApp
+// database containing  the urls for tinyApp
 //*******************************************
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -34,23 +34,21 @@ const users = {
 }
 
 // handling the cookies
-// app.use("/urls", (req, res, next) => {
+app.use("/urls", (req, res, next) => {
+  if (req.cookies["username"]) {
+    next();
+  } else {
+    res.redirect('/login');
+  }
+})
 
-//   if (req.cookies["username"]) {
-//     next();
-//   } else {
-//     res.redirect('/login');
-//   } 
-// })
-
-// app.use("/urls/new", (req, res, next) => {
-
-//   if (req.cookies["username"]) {
-//     next();
-//   } else {
-//     res.redirect('/login');
-//   } 
-// })
+app.use("/urls/new", (req, res, next) => {
+  if (req.cookies["username"]) {
+    next();
+  } else {
+    res.redirect('/login');
+  }
+})
 
 
 // Gets
@@ -147,21 +145,30 @@ app.post("/login", (req, res) => {
   res.redirect('/urls/');
 });
 
+// checking if new email is already existing
+const emailChecker = function (email) {
+  for (let item in users) {
+    if (users[item].email === email) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // handling the user registration 
 app.post("/register", (req, res) => {
-  console.log(req.body)
-  let newUserObject = {};
-  newUserObject['email'] = req.body['email'];
-  newUserObject['password'] = req.body['password'];
-  if (newUserObject.email === '' || newUserObject.password === '') {
-    return res.sendStatus(404);
-  } else if (newUserObject.email) {
-    return res.sendStatus(404);
+  email = req.body['email'];
+  password = req.body['password'];
+  if (email === '' ||password === '') {
+    res.statusCode = 404;
+    res.send("Error!  Email / Password fields were left blank. Please enter an email and password into the fields")
+  } else if (emailChecker(email)) {
+    res.statusCode = 404;
+    res.send("Error! Email address already exists. Please use another email address")
   } else {
     let uniqueId = generateRandomString();
-    newUserObject.id = uniqueId
-    users[uniqueId] = newUserObject
-    res.cookie('id', newUserObject.id); // setting a random user id
+    users[uniqueId] = {id:uniqueId, email: email, password: password};
+    res.cookie('user_Id', uniqueId); // setting a random user id
     res.redirect('/urls/');
   }
 });
