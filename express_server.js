@@ -2,8 +2,8 @@
 //
 const express = require("express");
 const app = express();
-const PORT = 8080; // default port 8080
-const cookieParser = require('cookie-parser')
+const PORT = 8080;
+const cookieParser = require('cookie-parser');
 // using the cookie parser
 app.use(cookieParser())
 const bodyParser = require("body-parser");
@@ -18,6 +18,20 @@ const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+
+// user data object
+const users = {
+  "userRandomID": {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+  "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  }
+}
 
 // handling the cookies
 // app.use("/urls", (req, res, next) => {
@@ -39,14 +53,19 @@ const urlDatabase = {
 // })
 
 
-
-
 // Gets
 // ******************************************
 // Initial setup for the homepage of tinyApp
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
+
+// registration of a new user
+app.get("/register", (req, res) => {
+  let templateVars = { urls: urlDatabase, user: users[req.cookies.id] };
+  res.render("register", templateVars);
+});
+
 
 // page that displays the urls as a json object
 app.get("/urls.json", (req, res) => {
@@ -84,11 +103,9 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
-
-
 //Posts
 // ******************************************
-// to create a random URL for a longURL  
+// to create a random URL for a longURL, checks if http  has been entered at the beginning of the url
 app.post("/urls", (req, res) => {
   const randomURL = generateRandomString();
   let httpCheck = req.body.longURL.slice(0, 4)
@@ -106,10 +123,13 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   }
 });
 
-// to edit a url
+// to edit a url, hecks if http has been entered at the beginning of the url
 app.post("/urls/:shortURL/edit", (req, res) => {
   if (urlDatabase[req.params.shortURL]) {
-    urlDatabase[req.params.shortURL] = req.body.longURL;
+    let httpCheck = req.body.longURL.slice(0, 4)
+    if (httpCheck !== 'http') {
+      urlDatabase[req.params.shortURL] = 'http://' + req.body.longURL
+    } else urlDatabase[req.params.shortURL] = req.body.longURL;
   }
   res.redirect(`/urls/${req.params.shortURL}`)
 });
@@ -127,6 +147,25 @@ app.post("/login", (req, res) => {
   res.redirect('/urls/');
 });
 
+// handling the user registration 
+app.post("/register", (req, res) => {
+  console.log(req.body)
+  let newUserObject = {};
+  newUserObject['email'] = req.body['email'];
+  newUserObject['password'] = req.body['password'];
+  if (newUserObject.email === '' || newUserObject.password === '') {
+    return res.sendStatus(404);
+  } else if (newUserObject.email) {
+    return res.sendStatus(404);
+  } else {
+    let uniqueId = generateRandomString();
+    newUserObject.id = uniqueId
+    users[uniqueId] = newUserObject
+    res.cookie('id', newUserObject.id); // setting a random user id
+    res.redirect('/urls/');
+  }
+});
+
 // Function that generates a random string for shortening a url 
 const generateRandomString = () => {
   let result = "";
@@ -136,7 +175,6 @@ const generateRandomString = () => {
   }
   return result;
 };
-
 
 // Server's up and listening
 // ******************************************
