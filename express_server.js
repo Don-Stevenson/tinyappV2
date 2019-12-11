@@ -35,7 +35,7 @@ const users = {
 
 // handling the cookies
 app.use("/urls", (req, res, next) => {
-  if (req.cookies["username"]) {
+  if (users[req.cookies.user_Id]) {
     next();
   } else {
     res.redirect('/login');
@@ -43,7 +43,7 @@ app.use("/urls", (req, res, next) => {
 })
 
 app.use("/urls/new", (req, res, next) => {
-  if (req.cookies["username"]) {
+  if (users[req.cookies.user_Id]) {
     next();
   } else {
     res.redirect('/login');
@@ -60,9 +60,20 @@ app.get("/", (req, res) => {
 
 // registration of a new user
 app.get("/register", (req, res) => {
-  let templateVars = { urls: urlDatabase, user: users[req.cookies.id] };
+  let templateVars = {
+    urls: urlDatabase,
+    user: users[req.cookies.user_Id]
+  };
   res.render("register", templateVars);
 });
+
+// user login
+app.get("/login", (req, res) => {
+  let templateVars = { urls: urlDatabase, user: users[req.cookies.id] };
+  res.render("login", templateVars);
+});
+
+
 
 
 // page that displays the urls as a json object
@@ -72,21 +83,30 @@ app.get("/urls.json", (req, res) => {
 
 // renders the new urls page
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  let templateVars = {
+    urls: urlDatabase,
+    user: users[req.cookies.user_Id]
+  };
+  res.render("urls_new", templateVars);
 });
 
 // route that renders the short url 
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = {
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL]
+    longURL: urlDatabase[req.params.shortURL],
+    user: users[req.cookies.user_Id]
   };
   res.render("urls_show", templateVars);
 });
 
 // route that renders the urls from urls_index
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase };
+ // console.log(users)
+  let templateVars = {
+    urls: urlDatabase,
+    user: users[req.cookies.user_Id]
+  };
   res.render("urls_index", templateVars);
 });
 
@@ -132,16 +152,26 @@ app.post("/urls/:shortURL/edit", (req, res) => {
   res.redirect(`/urls/${req.params.shortURL}`)
 });
 
+// handling the userlogin
+app.post("/login", (req, res) => {
+  const userId = idFromEmail(req.body.email)
+  if (userId) {
+    res.cookie('id', idFromEmail(req.body.email));
+    res.redirect('/urls/');
+  } else {
+    res.redirect('/register');
+  }
+});
 
 // handling the user logout
 app.post("/logout", (req, res) => {
-  res.clearCookie(req.cookies["usersname"]);
+  res.clearCookie('user_Id');
   res.redirect('/urls/');
 });
 
 // user login
 app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
+  res.cookie('username', uniqueId);
   res.redirect('/urls/');
 });
 
@@ -157,9 +187,9 @@ const emailChecker = function (email) {
 
 // handling the user registration 
 app.post("/register", (req, res) => {
-  email = req.body['email'];
-  password = req.body['password'];
-  if (email === '' ||password === '') {
+  const email = req.body['email'];
+  const password = req.body['password'];
+  if (email === '' || password === '') {
     res.statusCode = 404;
     res.send("Error!  Email / Password fields were left blank. Please enter an email and password into the fields")
   } else if (emailChecker(email)) {
@@ -167,12 +197,18 @@ app.post("/register", (req, res) => {
     res.send("Error! Email address already exists. Please use another email address")
   } else {
     let uniqueId = generateRandomString();
-    users[uniqueId] = {id:uniqueId, email: email, password: password};
+    users[uniqueId] = {
+       id: uniqueId, 
+       email: email, 
+       password: password
+       };
     res.cookie('user_Id', uniqueId); // setting a random user id
     res.redirect('/urls/');
   }
 });
 
+// Functions
+//********************************************* */
 // Function that generates a random string for shortening a url 
 const generateRandomString = () => {
   let result = "";
@@ -181,6 +217,16 @@ const generateRandomString = () => {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return result;
+};
+
+// function that finds user by email, returning id
+const idFromEmail = function (email) {
+  for (let item in users) {
+    if (users[item].email === email) {
+      return users[item].id;
+    }
+  }
+  return false;
 };
 
 // Server's up and listening
