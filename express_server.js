@@ -20,7 +20,7 @@ app.set("view engine", "ejs");
 // function that returns the URLs where the userID is equal to the id of the currently logged in user.
 const urlsForUser = (id) => {
   let urlDatabaseForUser = {};
-//  console.log("database inside urlsforuser", urlDatabase)
+  //  console.log("database inside urlsforuser", urlDatabase)
   for (let url in urlDatabase) {
     if (urlDatabase[url].userID === id) {
       urlDatabaseForUser[url] = urlDatabase[url];
@@ -70,7 +70,7 @@ app.use("/urls/new", (req, res, next) => {
 })
 
 app.get("/urls", (req, res) => {
- // console.log("inside urls for user", urlsForUser(req.session.user_id))
+  // console.log("inside urls for user", urlsForUser(req.session.user_id))
   let userInfo = users[req.session.user_id]
   let templateVars = {
     user: userInfo,
@@ -88,7 +88,7 @@ app.get("/", (req, res) => {
 
 // registration of a new user
 app.get("/register", (req, res) => {
- // console.log("in the register")
+  // console.log("in the register")
   let templateVars = {
     urls: urlDatabase,
     user: users[req.session.user_id]
@@ -98,7 +98,7 @@ app.get("/register", (req, res) => {
 
 // user login
 app.get("/login", (req, res) => {
- // console.log("this is the one, ", req.session)
+  // console.log("this is the one, ", req.session)
   let templateVars = { urls: urlDatabase, user: req.session && users[req.session.user_id] };
   res.render("login", templateVars);
 });
@@ -134,6 +134,8 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
+// b8FWTl
+// Cu7obT
 //redirect any request from a short url to its long URL
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL].longURL;
@@ -163,7 +165,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   } else {
     res.send(400);
     res.redirect('/login');
-    }
+  }
 });
 
 // to edit a url, checks if http has been entered at the beginning of the url, only if they are logged in
@@ -177,8 +179,8 @@ app.post("/urls/:shortURL/edit", (req, res) => {
     }
     res.redirect(`/urls/${req.params.shortURL}`)
   } else {
-  res.send(400);
-  res.redirect('/login');
+    res.send(400);
+    res.redirect('/login');
   }
 });
 
@@ -227,7 +229,7 @@ app.post("/register", (req, res) => {
       email: email,
       password: password
     };
-   // console.log('in the register users', users)
+    // console.log('in the register users', users)
     res.cookie('user_id', uniqueId); // setting a random user id
     res.redirect('/urls/');
   }
@@ -247,11 +249,11 @@ const generateRandomString = () => {
 
 // function that finds user by email, returning id
 const idFromEmail = (email) => {
- // console.log("email is", email)
+  // console.log("email is", email)
   for (let item in users) {
-   // console.log('this is the item', item)
+    // console.log('this is the item', item)
     if (users[item].email === email) {
-     // console.log("in the if")
+      // console.log("in the if")
       return users[item].id;
     }
   }
