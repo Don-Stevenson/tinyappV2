@@ -1,10 +1,14 @@
 //Requires and variable definitions
 //
+const bcrypt = require('bcrypt');
 const cookieSession = require('cookie-session');
 const express = require("express");
 const app = express();
 const PORT = 8080;
-// const cookieParser = require('cookie-parser');
+const bodyParser = require("body-parser");
+app.use(bodyParser.urlencoded({ extended: true }));
+app.set("view engine", "ejs");
+
 app.use(cookieSession({
   name: 'session',
   secret: 'Don',
@@ -12,15 +16,9 @@ app.use(cookieSession({
   // Cookie Options
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }))
-
-const bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({ extended: true }));
-app.set("view engine", "ejs");
-
 // function that returns the URLs where the userID is equal to the id of the currently logged in user.
 const urlsForUser = (id) => {
   let urlDatabaseForUser = {};
-  //  console.log("database inside urlsforuser", urlDatabase)
   for (let url in urlDatabase) {
     if (urlDatabase[url].userID === id) {
       urlDatabaseForUser[url] = urlDatabase[url];
@@ -70,7 +68,6 @@ app.use("/urls/new", (req, res, next) => {
 })
 
 app.get("/urls", (req, res) => {
-  // console.log("inside urls for user", urlsForUser(req.session.user_id))
   let userInfo = users[req.session.user_id]
   let templateVars = {
     user: userInfo,
@@ -88,7 +85,6 @@ app.get("/", (req, res) => {
 
 // registration of a new user
 app.get("/register", (req, res) => {
-  // console.log("in the register")
   let templateVars = {
     urls: urlDatabase,
     user: users[req.session.user_id]
@@ -98,7 +94,6 @@ app.get("/register", (req, res) => {
 
 // user login
 app.get("/login", (req, res) => {
-  // console.log("this is the one, ", req.session)
   let templateVars = { urls: urlDatabase, user: req.session && users[req.session.user_id] };
   res.render("login", templateVars);
 });
@@ -134,8 +129,6 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
-// b8FWTl
-// Cu7obT
 //redirect any request from a short url to its long URL
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL].longURL;
@@ -146,11 +139,13 @@ app.get("/u/:shortURL", (req, res) => {
 // ******************************************
 // to create a random URL for a longURL, checks if http  has been entered at the beginning of the url
 app.post("/urls", (req, res) => {
-  // console.log("in the post urls")
   const randomURL = generateRandomString();
   let httpCheck = req.body.longURL.slice(0, 4)
   if (httpCheck !== 'http') {
-    urlDatabase[randomURL] = { longURL: 'http://' + req.body.longURL, userID: req.session.user_id };
+    urlDatabase[randomURL] = {
+      longURL: 'http://' + req.body.longURL,
+      userID: req.session.user_id
+    };
   } else urlDatabase[randomURL] = { longURL: req.body.longURL, userID: req.session.user_id };
   res.redirect("/urls/" + randomURL);
 });
@@ -188,8 +183,7 @@ app.post("/urls/:shortURL/edit", (req, res) => {
 app.post("/login", (req, res) => {
   const userId = idFromEmail(req.body.email)
   if (userId) {
-    //console.log("user id is:", userId)
-    req.session.user_id = idFromEmail(req.body.email)
+    req.session.user_id = userId
     res.redirect('/urls');
   } else {
     res.redirect('/register');
@@ -215,7 +209,8 @@ const emailChecker = (email) => {
 // handling the user registration 
 app.post("/register", (req, res) => {
   const email = req.body['email'];
-  const password = req.body['password'];
+  const password = bcrypt.hashSync(req.body['password'], 10);
+  // console.log(bcrypt.compareSync(req.body['password'], password));
   if (email === '' || password === '') {
     res.statusCode = 404;
     res.send("Error!  Email / Password fields were left blank. Please enter an email and password into the fields")
@@ -229,7 +224,6 @@ app.post("/register", (req, res) => {
       email: email,
       password: password
     };
-    // console.log('in the register users', users)
     res.cookie('user_id', uniqueId); // setting a random user id
     res.redirect('/urls/');
   }
@@ -249,11 +243,8 @@ const generateRandomString = () => {
 
 // function that finds user by email, returning id
 const idFromEmail = (email) => {
-  // console.log("email is", email)
   for (let item in users) {
-    // console.log('this is the item', item)
     if (users[item].email === email) {
-      // console.log("in the if")
       return users[item].id;
     }
   }
