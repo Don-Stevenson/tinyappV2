@@ -8,6 +8,7 @@ const PORT = 8080;
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
+const {getsUserByEmail} = require('./helpers');
 
 app.use(cookieSession({
   name: 'session',
@@ -181,7 +182,7 @@ app.post("/urls/:shortURL/edit", (req, res) => {
 
 // handling the userlogin
 app.post("/login", (req, res) => {
-  const userId = idFromEmail(req.body.email)
+  const userId = getsUserByEmail(req.body.email, users)
   if (userId) {
     req.session.user_id = userId
     res.redirect('/urls');
@@ -241,15 +242,7 @@ const generateRandomString = () => {
   return result;
 };
 
-// function that finds user by email, returning id
-const idFromEmail = (email) => {
-  for (let item in users) {
-    if (users[item].email === email) {
-      return users[item].id;
-    }
-  }
-  return false;
-};
+
 
 // Server's up and listening
 // ******************************************
