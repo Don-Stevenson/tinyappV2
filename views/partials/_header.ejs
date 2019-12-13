@@ -10,26 +10,22 @@
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
-      <!-- Handling the login -->
-      <% if(user) { %>
-      <form class="form-inline" method="POST" action="/logout">
-        <div class="form-group mb-2">
-          <h5>Logged In: <%= user.email %> </h5>
-          <button type="submit" method="POST" action="/logout" class="btn btn-primary">Log Out</button>
-        </div>
-      </form>
-      <% } else { %>
-      <form class="form-inline" method="POST" action="/login">
-        <div class="navbar-nav">
-          <div class="form-group mb-2">
-            <label for="username">Enter a new username:</label>
-            <input class="form-control" type="text" name="username" placeholder="your username here ..."
-              style="width: 300px; margin: 1em">
-            <button type="submit" class="btn btn-primary">Submit</button>
-          </div>
-        </div>
-      </form>
-      <% } %>
+    </div>
+    <!-- Handling the login -->
+    <% if(user) { %>
+    <form class="form-inline" method="POST" action="/logout">
+      <div class="form-group mb-2">
+        <h5>Logged In: <%= user.email %> </h5>
+        <button type="submit" method="POST" action="/logout" class="btn btn-outline-danger">Log Out</button>
+      </div>
+    </form>
+    <% } else { %>
+    <div class="navbar-nav">
+      <a class="nav-item nav-link" href="/login">Log in</a>
+      <a class="nav-item nav-link" href="/register">Register</a>
+    </div>
+    </form>
+    <% } %>
     </div>
   </nav>
 </header>

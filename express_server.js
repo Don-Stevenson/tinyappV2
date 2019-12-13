@@ -8,7 +8,10 @@ const PORT = 8080;
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
-const {getsUserByEmail} = require('./helpers');
+const { getsUserByEmail,
+  generateRandomString,
+  emailChecker
+} = require('./helpers');
 
 app.use(cookieSession({
   name: 'session',
@@ -17,6 +20,7 @@ app.use(cookieSession({
   // Cookie Options
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }))
+
 // function that returns the URLs where the userID is equal to the id of the currently logged in user.
 const urlsForUser = (id) => {
   let urlDatabaseForUser = {};
@@ -36,7 +40,6 @@ const urlDatabase = {
   i3BoGr: { longURL: "https://www.google.ca", userID: "userRandomID" }
 };
 
-
 // user data object
 const users = {
   "userRandomID": {
@@ -50,6 +53,9 @@ const users = {
     password: "dishwasher-funk"
   }
 }
+
+// Middleware
+//********************************************
 // route that renders the urls from urls_index
 
 app.use("/urls", (req, res, next) => {
@@ -68,6 +74,11 @@ app.use("/urls/new", (req, res, next) => {
   }
 })
 
+
+// Gets
+// *****************************************
+// Initial setup for the homepage of tinyApp
+
 app.get("/urls", (req, res) => {
   let userInfo = users[req.session.user_id]
   let templateVars = {
@@ -77,11 +88,8 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-// Gets
-// ******************************************
-// Initial setup for the homepage of tinyApp
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.redirect('/urls/');
 });
 
 // registration of a new user
@@ -99,7 +107,6 @@ app.get("/login", (req, res) => {
   res.render("login", templateVars);
 });
 
-
 // page that displays the urls as a json object
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
@@ -116,14 +123,17 @@ app.get("/urls/new", (req, res) => {
 
 // route that renders the short url 
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL].longURL,
-    user: users[req.session.user_id]
-  };
-  res.render("urls_show", templateVars);
+  if (req.session.user_id === urlDatabase[req.params.shortURL].userID) {
+    let templateVars = {
+      shortURL: req.params.shortURL,
+      longURL: urlDatabase[req.params.shortURL].longURL,
+      user: users[req.session.user_id]
+    };
+    res.render("urls_show", templateVars);
+  } else {
+    res.send(401, "Unauthorized. You are not allowed access to this page");
+  }
 });
-
 
 // page that displays a basic hello html page
 app.get("/hello", (req, res) => {
@@ -147,7 +157,10 @@ app.post("/urls", (req, res) => {
       longURL: 'http://' + req.body.longURL,
       userID: req.session.user_id
     };
-  } else urlDatabase[randomURL] = { longURL: req.body.longURL, userID: req.session.user_id };
+  } else urlDatabase[randomURL] = {
+    longURL: req.body.longURL,
+    userID: req.session.user_id
+  };
   res.redirect("/urls/" + randomURL);
 });
 
@@ -159,8 +172,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
       res.redirect('/urls/');
     }
   } else {
-    res.send(400);
-    res.redirect('/login');
+    res.send(401, "Unauthorized. You are not allowed access to this page");
   }
 });
 
@@ -170,13 +182,12 @@ app.post("/urls/:shortURL/edit", (req, res) => {
     if (urlDatabase[req.params.shortURL]) {
       let httpCheck = req.body.longURL.slice(0, 4)
       if (httpCheck !== 'http') {
-        urlDatabase[req.params.shortURL] = 'http://' + req.body.longURL
-      } else urlDatabase[req.params.shortURL] = req.body.longURL;
+        urlDatabase[req.params.shortURL].longURL = 'http://' + req.body.longURL
+      } else urlDatabase[req.params.shortURL].longURL = req.body.longURL;
     }
     res.redirect(`/urls/${req.params.shortURL}`)
   } else {
-    res.send(400);
-    res.redirect('/login');
+    res.send(401, "Unauthorized. You are not allowed access to this page");
   }
 });
 
@@ -197,25 +208,15 @@ app.post("/logout", (req, res) => {
   res.redirect('/urls/');
 });
 
-// checking if new email is already existing
-const emailChecker = (email) => {
-  for (let item in users) {
-    if (users[item].email === email) {
-      return true;
-    }
-  }
-  return false;
-}
 
 // handling the user registration 
 app.post("/register", (req, res) => {
   const email = req.body['email'];
   const password = bcrypt.hashSync(req.body['password'], 10);
-  // console.log(bcrypt.compareSync(req.body['password'], password));
   if (email === '' || password === '') {
     res.statusCode = 404;
     res.send("Error!  Email / Password fields were left blank. Please enter an email and password into the fields")
-  } else if (emailChecker(email)) {
+  } else if (emailChecker(email, users)) {
     res.statusCode = 404;
     res.send("Error! Email address already exists. Please use another email address")
   } else {
@@ -230,21 +231,7 @@ app.post("/register", (req, res) => {
   }
 });
 
-// Functions
-//********************************************* */
-// Function that generates a random string for shortening a url 
-const generateRandomString = () => {
-  let result = "";
-  let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqurstuvwxyz0123456789";
-  for (let i = 0; i < 6; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
-};
-
-
-
-// Server's up and listening
+// Server is up and listening
 // ******************************************
 // Response to the command line that shows the server is up an running
 app.listen(PORT, () => {
