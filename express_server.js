@@ -13,6 +13,7 @@ const { getsUserByEmail,
   emailChecker
 } = require('./helpers');
 
+// setting up the cookieSession parameters
 app.use(cookieSession({
   name: 'session',
   secret: 'Don',
