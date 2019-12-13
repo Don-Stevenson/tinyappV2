@@ -15,15 +15,15 @@ const testUsers = {
   }
 };
 
-describe('getsUserByEmail',  () => {
+describe('getsUserByEmail', () => {
   it('should return a user with valid email', () => {
-    const user = getsUserByEmail("user@example.com", testUsers)
+    const user = getsUserByEmail("user@example.com", testUsers);
     const expectedOutput = "userRandomID";
     assert.deepEqual(user, expectedOutput);
-  })
+  });
 
   it('should return undefined with invalid email', () => {
-    const user = getsUserByEmail("asdf@example.com", testUsers)
+    const user = getsUserByEmail("asdf@example.com", testUsers);
     const expectedOutput = undefined;
     assert.deepEqual(user, expectedOutput);
   });

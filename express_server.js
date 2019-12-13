@@ -1,5 +1,5 @@
 //Requires and variable definitions
-//
+//*********************************
 const bcrypt = require('bcrypt');
 const cookieSession = require('cookie-session');
 const express = require("express");
@@ -16,10 +16,8 @@ const { getsUserByEmail,
 app.use(cookieSession({
   name: 'session',
   secret: 'Don',
-
-  // Cookie Options
-  maxAge: 24 * 60 * 60 * 1000 // 24 hours
-}))
+  maxAge: 24 * 60 * 60 * 1000
+}));
 
 // function that returns the URLs where the userID is equal to the id of the currently logged in user.
 const urlsForUser = (id) => {
@@ -30,11 +28,11 @@ const urlsForUser = (id) => {
     }
   }
   return urlDatabaseForUser;
-}
+};
 
-// DATABASE
-// database containing  the urls for tinyApp
+// DATABASES
 //*******************************************
+// database containing  the urls for tinyApp
 const urlDatabase = {
   b6UTxQ: { longURL: "https://www.tsn.ca", userID: "userRandomID" },
   i3BoGr: { longURL: "https://www.google.ca", userID: "userRandomID" }
@@ -52,7 +50,7 @@ const users = {
     email: "user2@example.com",
     password: "dishwasher-funk"
   }
-}
+};
 
 // Middleware
 //********************************************
@@ -64,7 +62,7 @@ app.use("/urls", (req, res, next) => {
   } else {
     res.redirect('/login');
   }
-})
+});
 
 app.use("/urls/new", (req, res, next) => {
   if (users[req.session.user_id]) {
@@ -72,7 +70,7 @@ app.use("/urls/new", (req, res, next) => {
   } else {
     res.redirect('/login');
   }
-})
+});
 
 
 // Gets
@@ -80,7 +78,7 @@ app.use("/urls/new", (req, res, next) => {
 // Initial setup for the homepage of tinyApp
 
 app.get("/urls", (req, res) => {
-  let userInfo = users[req.session.user_id]
+  let userInfo = users[req.session.user_id];
   let templateVars = {
     user: userInfo,
     urls: userInfo ? urlsForUser(req.session.user_id) : {}
@@ -121,7 +119,7 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
-// route that renders the short url 
+// route that renders the short url
 app.get("/urls/:shortURL", (req, res) => {
   if (req.session.user_id === urlDatabase[req.params.shortURL].userID) {
     let templateVars = {
@@ -146,12 +144,13 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
+
 //Posts
 // ******************************************
 // to create a random URL for a longURL, checks if http  has been entered at the beginning of the url
 app.post("/urls", (req, res) => {
   const randomURL = generateRandomString();
-  let httpCheck = req.body.longURL.slice(0, 4)
+  let httpCheck = req.body.longURL.slice(0, 4);
   if (httpCheck !== 'http') {
     urlDatabase[randomURL] = {
       longURL: 'http://' + req.body.longURL,
@@ -180,12 +179,12 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 app.post("/urls/:shortURL/edit", (req, res) => {
   if (req.session.user_id === urlDatabase[req.params.shortURL].userID) {
     if (urlDatabase[req.params.shortURL]) {
-      let httpCheck = req.body.longURL.slice(0, 4)
+      let httpCheck = req.body.longURL.slice(0, 4);
       if (httpCheck !== 'http') {
-        urlDatabase[req.params.shortURL].longURL = 'http://' + req.body.longURL
+        urlDatabase[req.params.shortURL].longURL = 'http://' + req.body.longURL;
       } else urlDatabase[req.params.shortURL].longURL = req.body.longURL;
     }
-    res.redirect(`/urls/${req.params.shortURL}`)
+    res.redirect(`/urls/${req.params.shortURL}`);
   } else {
     res.send(401, "Unauthorized. You are not allowed access to this page");
   }
@@ -193,9 +192,9 @@ app.post("/urls/:shortURL/edit", (req, res) => {
 
 // handling the userlogin
 app.post("/login", (req, res) => {
-  const userId = getsUserByEmail(req.body.email, users)
+  const userId = getsUserByEmail(req.body.email, users);
   if (userId) {
-    req.session.user_id = userId
+    req.session.user_id = userId;
     res.redirect('/urls');
   } else {
     res.redirect('/register');
@@ -208,17 +207,16 @@ app.post("/logout", (req, res) => {
   res.redirect('/urls/');
 });
 
-
-// handling the user registration 
+// handling the user registration
 app.post("/register", (req, res) => {
   const email = req.body['email'];
   const password = bcrypt.hashSync(req.body['password'], 10);
   if (email === '' || password === '') {
     res.statusCode = 404;
-    res.send("Error!  Email / Password fields were left blank. Please enter an email and password into the fields")
+    res.send("Error!  Email / Password fields were left blank. Please enter an email and password into the fields");
   } else if (emailChecker(email, users)) {
     res.statusCode = 404;
-    res.send("Error! Email address already exists. Please use another email address")
+    res.send("Error! Email address already exists. Please use another email address");
   } else {
     let uniqueId = generateRandomString();
     users[uniqueId] = {

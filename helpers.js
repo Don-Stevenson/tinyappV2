@@ -10,8 +10,7 @@ const getsUserByEmail = (email, users) => {
   return undefined;
 };
 
-
-// Function that generates a random string for shortening a url 
+// Function that generates a random string for shortening a url
 const generateRandomString = () => {
   let result = "";
   let chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqurstuvwxyz0123456789";
@@ -21,7 +20,6 @@ const generateRandomString = () => {
   return result;
 };
 
-
 // checking if new email is already existing
 const emailChecker = (email, users) => {
   for (let item in users) {
@@ -30,11 +28,10 @@ const emailChecker = (email, users) => {
     }
   }
   return false;
-}
-
+};
 
 module.exports = {
   getsUserByEmail,
   generateRandomString,
   emailChecker
-}
+};
